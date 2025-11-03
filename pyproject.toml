@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pgf"
+version = "0.1.0"
+description = "A small example package."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Patrick Fox" }]
+requires-python = ">=3.9"
+dependencies = [
+  "pandas>=2.2"
+]
+
+[project.urls]
+Homepage = "https://github.com/pgfox/pgf"
+Issues = "https://github.com/pgfox/pgf/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pgf*"]
