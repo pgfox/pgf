@@ -40,8 +40,8 @@ def test_add_date_time():
     assert out_row['day'].values[0] == 15     
     assert out_row['quarter'].values[0] == 1
     
-    
 
+    
 def test_add_date_no_time():
     '''
     Test add_date_time with include_time=False

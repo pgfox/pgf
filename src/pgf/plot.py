@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import math
 from statistics import NormalDist
 from typing import Optional
 
 import numpy as np
 import pandas as pd
 
-__all__ = ["qq_plot"]
+__all__ = ["qq_plot", "histogram_bin_counts"]
 
 
 def qq_plot(
@@ -67,3 +68,36 @@ def qq_plot(
     ax.legend()
     return ax
 
+
+def histogram_bin_counts(series: pd.Series) -> dict[str, int]:
+    """Return recommended histogram bin counts from four common rules."""
+    clean = series.dropna().astype(float)
+    n = len(clean)
+    if n == 0:
+        raise ValueError("histogram_bin_counts requires at least one value")
+
+    def _positive(value: float) -> int:
+        return max(1, int(math.ceil(value)))
+
+    counts: dict[str, int] = {
+        "square_root": _positive(math.sqrt(n)),
+        "sturges": _positive(1 + math.log2(n)),
+    }
+
+    data_range = clean.max() - clean.min()
+    if data_range == 0:
+        counts["scott"] = counts["freedman_diaconis"] = 1
+        return counts
+
+    std = float(clean.std(ddof=1))
+    scott_width = 3.5 * std / (n ** (1 / 3))
+    counts["scott"] = _positive(data_range / scott_width) if scott_width > 0 else 1
+
+    q1 = clean.quantile(0.25)
+    q3 = clean.quantile(0.75)
+    iqr = float(q3 - q1)
+    fd_width = 2 * iqr / (n ** (1 / 3))
+    counts["freedman_diaconis"] = (
+        _positive(data_range / fd_width) if fd_width > 0 else 1
+    )
+    return counts

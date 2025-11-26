@@ -1,14 +1,14 @@
 import pandas as pd
 
 def add_date_time(
-    df: pd.DataFrame, col: str, include_time: bool = True
+    df: pd.DataFrame, date_col: str, include_time: bool = True
 ) -> pd.DataFrame:
     """
     Add date and time related columns from a date string column.
     """
     
     df = df.copy()
-    df['date'] = pd.to_datetime(df[col])
+    df['date'] = pd.to_datetime(df[date_col])
 
     df['year'] = df.date.dt.year
     df['month'] = df.date.dt.month
