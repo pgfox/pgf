@@ -105,9 +105,19 @@ def histogram_plot(
 
 
 def cdf_plot(
-    series: pd.Series, ax: Optional["matplotlib.axes.Axes"] = None
+    series: pd.Series,
+    ax: Optional["matplotlib.axes.Axes"] = None,
+    *,
+    label: Optional[str] = "Empirical CDF",
 ) -> "matplotlib.axes.Axes":
-    """Draw the empirical cumulative distribution function for `series`."""
+    """
+    Draw the empirical cumulative distribution function for `series`.
+
+    Parameters
+    ----------
+    label:
+        Optional legend label. Defaults to the Series name or "Empirical CDF".
+    """
     try:
         import matplotlib.pyplot as plt
     except ImportError as exc:  # pragma: no cover - import guard
@@ -119,14 +129,17 @@ def cdf_plot(
 
     values = np.sort(clean.to_numpy())
     cumulative = np.arange(1, len(values) + 1) / len(values)
+    label_text = label 
+    x_label = series.name if series.name else "Value"
+
 
     if ax is None:
         _, ax = plt.subplots()
 
-    ax.step(values, cumulative, where="post", label="Empirical CDF")
+    ax.step(values, cumulative, where="post", label=label_text)
     ax.set_ylim(0, 1.05)
     ax.set_title("Empirical CDF")
-    ax.set_xlabel("Value")
+    ax.set_xlabel(x_label)
     ax.set_ylabel("Cumulative Probability")
     ax.legend()
     return ax

@@ -74,13 +74,15 @@ def test_histogram_plot_validates_input():
 
 
 def test_cdf_plot_draws_cumulative_line():
-    series = pd.Series([3, 1, 4, 1])
+    series = pd.Series([3, 1, 4, 1], name="numbers")
     fig, ax = plt.subplots()
     try:
         returned = cdf_plot(series, ax=ax)
         assert returned is ax
         assert len(ax.lines) >= 1
-        xdata, ydata = ax.lines[0].get_data()
+        line = ax.lines[0]
+        xdata, ydata = line.get_data()
+        assert line.get_label() == "numbers"
         assert xdata[0] == pytest.approx(1)
         assert ydata[-1] == pytest.approx(1.0)
     finally:
@@ -90,3 +92,13 @@ def test_cdf_plot_draws_cumulative_line():
 def test_cdf_plot_requires_data():
     with pytest.raises(ValueError):
         cdf_plot(pd.Series(dtype=float))
+
+
+def test_cdf_plot_respects_custom_label():
+    series = pd.Series([1, 2, 3], name="ignored")
+    fig, ax = plt.subplots()
+    try:
+        cdf_plot(series, ax=ax, label="Custom")
+        assert ax.lines[0].get_label() == "Custom"
+    finally:
+        plt.close(fig)
