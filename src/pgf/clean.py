@@ -19,3 +19,25 @@ def fix_col_names(df: pd.DataFrame) -> pd.DataFrame:
     )
     return new_df
 
+
+def null_percentage(
+    df: pd.DataFrame, *, include_empty_strings: bool = True
+) -> dict[str, float]:
+    """Return a dictionary with the percentage of null values per column."""
+    if df.empty:
+        return {col: 0.0 for col in df.columns}
+
+    total = len(df)
+    percentages: dict[str, float] = {}
+    for col in df.columns:
+        series = df[col].copy()
+        if include_empty_strings:
+            str_mask = series.apply(lambda value: isinstance(value, str))
+            if str_mask.any():
+                stripped = series[str_mask].str.strip()
+                series.loc[str_mask] = stripped
+                series.loc[str_mask & stripped.eq("")] = pd.NA
+
+        nulls = series.isna().sum()
+        percentages[col] = (nulls / total) * 100
+    return percentages
