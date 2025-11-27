@@ -9,7 +9,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-__all__ = ["qq_plot", "histogram_bin_counts"]
+__all__ = ["qq_plot", "histogram_plot", "histogram_bin_counts", "cdf_plot"]
 
 
 def qq_plot(
@@ -65,6 +65,69 @@ def qq_plot(
     ax.set_title("Normal Q-Q Plot")
     ax.set_xlabel("Theoretical Quantiles")
     ax.set_ylabel("Sample Quantiles")
+    ax.legend()
+    return ax
+
+
+def histogram_plot(
+    series: pd.Series,
+    bins: int,
+    ax: Optional["matplotlib.axes.Axes"] = None,
+    *,
+    density: bool = False,
+) -> "matplotlib.axes.Axes":
+    """Draw and return a histogram for the given series and bin count."""
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover - import guard
+        raise ImportError("matplotlib is required to use histogram_plot") from exc
+
+    clean = series.dropna().astype(float)
+    if clean.empty:
+        raise ValueError("histogram_plot requires at least one non-null observation")
+
+    try:
+        bin_count = int(bins)
+    except (TypeError, ValueError) as exc:
+        raise TypeError("bins must be an integer") from exc
+
+    if bin_count < 1:
+        raise ValueError("bins must be greater than zero")
+
+    if ax is None:
+        _, ax = plt.subplots()
+
+    ax.hist(clean.to_numpy(), bins=bin_count, density=density, edgecolor="black")
+    ax.set_title("Histogram")
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Density" if density else "Frequency")
+    return ax
+
+
+def cdf_plot(
+    series: pd.Series, ax: Optional["matplotlib.axes.Axes"] = None
+) -> "matplotlib.axes.Axes":
+    """Draw the empirical cumulative distribution function for `series`."""
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover - import guard
+        raise ImportError("matplotlib is required to use cdf_plot") from exc
+
+    clean = series.dropna().astype(float)
+    if clean.empty:
+        raise ValueError("cdf_plot requires at least one non-null observation")
+
+    values = np.sort(clean.to_numpy())
+    cumulative = np.arange(1, len(values) + 1) / len(values)
+
+    if ax is None:
+        _, ax = plt.subplots()
+
+    ax.step(values, cumulative, where="post", label="Empirical CDF")
+    ax.set_ylim(0, 1.05)
+    ax.set_title("Empirical CDF")
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Cumulative Probability")
     ax.legend()
     return ax
 
