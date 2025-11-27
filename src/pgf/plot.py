@@ -138,7 +138,7 @@ def cdf_plot(
 
     ax.step(values, cumulative, where="post", label=label_text)
     ax.set_ylim(0, 1.05)
-    ax.set_title("Empirical CDF")
+    ax.set_title(label_text)
     ax.set_xlabel(x_label)
     ax.set_ylabel("Cumulative Probability")
     ax.legend()
