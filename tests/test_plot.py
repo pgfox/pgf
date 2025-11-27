@@ -6,7 +6,7 @@ matplotlib.use("Agg")
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from pgf.plot import cdf_plot, histogram_bin_counts, histogram_plot, qq_plot
+from pgf.plot import box_plot, cdf_plot, histogram_bin_counts, histogram_plot, qq_plot
 
 
 def test_qq_plot_draws_points_and_reference_line():
@@ -74,10 +74,10 @@ def test_histogram_plot_validates_input():
 
 
 def test_cdf_plot_draws_cumulative_line():
-    series = pd.Series([3, 1, 4, 1], name="numbers")
+    series = pd.Series([3, 1, 4, 1])
     fig, ax = plt.subplots()
     try:
-        returned = cdf_plot(series, ax=ax)
+        returned = cdf_plot(series, ax=ax, label="numbers")
         assert returned is ax
         assert len(ax.lines) >= 1
         line = ax.lines[0]
@@ -92,6 +92,34 @@ def test_cdf_plot_draws_cumulative_line():
 def test_cdf_plot_requires_data():
     with pytest.raises(ValueError):
         cdf_plot(pd.Series(dtype=float))
+
+
+def test_box_plot_without_segments_uses_numeric_columns():
+    df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": list("xyz")})
+    fig, ax = plt.subplots()
+    try:
+        returned = box_plot(df, ax=ax)
+        assert returned is ax
+        labels = [tick.get_text() for tick in ax.get_yticklabels()]
+        assert labels == ["a", "b"]
+    finally:
+        plt.close(fig)
+
+
+def test_box_plot_segments_by_column():
+    df = pd.DataFrame(
+        {
+            "value": [1, 2, 3, 4],
+            "group": ["A", "A", "B", "B"],
+        }
+    )
+    fig, ax = plt.subplots()
+    try:
+        box_plot(df, value_columns=["value"], segment_on="group", ax=ax)
+        labels = [tick.get_text() for tick in ax.get_yticklabels()]
+        assert labels == ["A", "B"]
+    finally:
+        plt.close(fig)
 
 
 def test_cdf_plot_respects_custom_label():
